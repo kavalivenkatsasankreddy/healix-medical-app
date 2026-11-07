@@ -116,6 +116,7 @@
     $$(".nav").forEach(el => el.classList.toggle("hidden", !visible.has(el.dataset.page)));
   }
   function medicinePicture(product) {
+    if (product.image) return `<img class="medicine-photo uploaded-medicine-photo" src="${escapeHtml(product.image)}" alt="Photo of ${escapeHtml(product.name)}">`;
     const color = ({ mint: "#6f9c82", peach: "#d98f71", blue: "#628ea2", cream: "#b7985e", pink: "#bd7e81" })[product.color] || "#6f9c82";
     const name = escapeHtml(product.name.length > 21 ? product.name.slice(0, 19) + "…" : product.name);
     const brand = escapeHtml((product.brand || "HEALIX").slice(0, 16));
@@ -221,7 +222,7 @@
     $("#cartItems").innerHTML = state.cart.length ? state.cart.map(item => {
       const p = state.products.find(product => product.id === item.id);
       if (!p) return "";
-      return `<div class="cart-row"><div class="product-art"><div class="medicine-visual ${escapeHtml(p.look || "bottle")} ${escapeHtml(p.color || "mint")}">H+</div></div><div><h3>${escapeHtml(p.name)}</h3><p>${escapeHtml(p.brand)} · ${inr(p.price)} each</p></div><div class="quantity"><button data-qty="${p.id}" data-change="-1">−</button><b>${item.quantity}</b><button data-qty="${p.id}" data-change="1">+</button></div><button class="remove" data-remove="${p.id}">Remove</button></div>`;
+      return `<div class="cart-row"><div class="product-art">${medicinePicture(p)}</div><div><h3>${escapeHtml(p.name)}</h3><p>${escapeHtml(p.brand)} · ${inr(p.price)} each</p></div><div class="quantity"><button data-qty="${p.id}" data-change="-1">−</button><b>${item.quantity}</b><button data-qty="${p.id}" data-change="1">+</button></div><button class="remove" data-remove="${p.id}">Remove</button></div>`;
     }).join("") : `<div class="empty-state"><div>＋</div><strong>Your basket is taking a breather.</strong><p>Explore the sample catalogue and add non-prescription essentials.</p><button class="dark-button" data-page="catalog">Browse medicines →</button></div>`;
     const subtotal = state.cart.reduce((sum, item) => sum + (state.products.find(p => p.id === item.id)?.price || 0) * item.quantity, 0);
     const tax = Math.round(subtotal * 0.05);
@@ -251,7 +252,14 @@
     if (page === "vendor") {
       const low = state.products.filter(p => availableStock(p) <= 10 || batchesFor(p).some(b => b.expiry >= monthNow() && b.expiry <= new Date(Date.now() + 60 * 86400000).toISOString().slice(0, 7) && b.stock > 0));
       $("#vendorStats").innerHTML = [["Live listings", state.products.length, "+ sample catalogue"], ["Open orders", state.orders.filter(o => o.status !== "Delivered").length, "Demo workflow"], ["Low stock", low.length, "Review soon"], ["Sales this month", inr(28450), "Illustrative"]];
-      $("#inventory").innerHTML = state.products.map(p => { const batches = batchesFor(p); const next = [...batches].sort((a, b) => a.expiry.localeCompare(b.expiry))[0]; const stock = availableStock(p); const near = next && next.expiry >= monthNow() && next.expiry <= new Date(Date.now() + 60 * 86400000).toISOString().slice(0, 7); return tableRow([`<strong>${escapeHtml(p.name)}</strong>`, `${escapeHtml(next?.batch || "Demo batch")} · ${escapeHtml(next?.expiry || "—")}`, `${stock} units`, inr(p.price), stock <= 10 ? `<span class="status pending">Low stock</span>` : near ? `<span class="status pending">Near expiry</span>` : `<span class="status">In stock</span>`]); }).join("");
+      $("#inventory").innerHTML = state.products.map(p => {
+        const batches = batchesFor(p);
+        const stock = availableStock(p);
+        const near = batches.some(b => b.expiry >= monthNow() && b.expiry <= new Date(Date.now() + 60 * 86400000).toISOString().slice(0, 7) && b.stock > 0);
+        const batchDetails = batches.map(b => `<small class="${b.expiry < monthNow() ? "expired-batch" : ""}">${escapeHtml(b.batch)} · ${escapeHtml(b.expiry)} · ${Number(b.stock) || 0} units</small>`).join("");
+        const image = p.image ? `<img class="inventory-thumb" src="${escapeHtml(p.image)}" alt="">` : "";
+        return tableRow([`<span class="inventory-product">${image}<strong>${escapeHtml(p.name)}</strong></span>`, `<span class="inventory-batches">${batchDetails}</span>`, `${stock} units`, inr(p.price), stock <= 10 ? `<span class="status pending">Low stock</span>` : near ? `<span class="status pending">Near expiry</span>` : `<span class="status">In stock</span>`]);
+      }).join("");
       $("#stockAlerts").innerHTML = low.map(p => { const near = batchesFor(p).some(b => b.expiry >= monthNow() && b.expiry <= new Date(Date.now() + 60 * 86400000).toISOString().slice(0, 7) && b.stock > 0); return `<div class="alert-row"><strong><i class="alert-dot"></i>${escapeHtml(p.name)}</strong><small>${availableStock(p)} available · ${near ? "batch nearing expiry; FEFO allocation enabled" : "reorder to avoid a stockout"}</small></div>`; }).join("") || `<p class="muted">All sample products have healthy stock.</p>`;
       $("#vendorOrders").innerHTML = state.orders.map((o, i) => tableRow([`<strong>${escapeHtml(o.id)}</strong>`, escapeHtml(o.customer || "Demo customer"), escapeHtml(o.items), inr(o.total), `<span class="status">${escapeHtml(o.status)}</span>`, `<button class="table-action" data-order-status="${i}">Advance status</button>`])).join("");
       $("#vendorPrescriptions").innerHTML = state.prescriptions.length ? state.prescriptions.map((rx, i) => tableRow([`<strong>${escapeHtml(rx.name)}</strong>`, escapeHtml(rx.submittedBy || "Demo customer"), escapeHtml(rx.date), `<span class="status ${rx.status === "Awaiting pharmacist review" ? "pending" : rx.status === "Rejected (demo)" ? "rejected" : ""}">${escapeHtml(rx.status)}</span>`, rx.status === "Awaiting pharmacist review" ? `<button class="table-action" data-rx-review="approve:${i}">Approve demo</button> <button class="table-action" data-rx-review="reject:${i}">Reject</button>` : "—"])).join("") : `<tr><td colspan="5">No demo submissions are waiting for review.</td></tr>`;
@@ -420,22 +428,107 @@
       persist(); updateHeader(); closeModal(); navTo("home"); toast("Signed out.");
     };
   }
+  function compressProductImage(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onerror = () => reject(new Error("The selected photo could not be read."));
+      reader.onload = () => {
+        const image = new Image();
+        image.onerror = () => reject(new Error("The selected photo could not be opened."));
+        image.onload = () => {
+          const scale = Math.min(1, 640 / Math.max(image.naturalWidth, image.naturalHeight));
+          const canvas = document.createElement("canvas");
+          canvas.width = Math.max(1, Math.round(image.naturalWidth * scale));
+          canvas.height = Math.max(1, Math.round(image.naturalHeight * scale));
+          const context = canvas.getContext("2d");
+          if (!context) { reject(new Error("Photo preview is unavailable in this browser.")); return; }
+          context.fillStyle = "#fff";
+          context.fillRect(0, 0, canvas.width, canvas.height);
+          context.drawImage(image, 0, 0, canvas.width, canvas.height);
+          let dataUrl = canvas.toDataURL("image/jpeg", 0.72);
+          if (dataUrl.length > 500_000) {
+            canvas.width = Math.max(1, Math.round(canvas.width * 0.7));
+            canvas.height = Math.max(1, Math.round(canvas.height * 0.7));
+            context.fillStyle = "#fff";
+            context.fillRect(0, 0, canvas.width, canvas.height);
+            context.drawImage(image, 0, 0, canvas.width, canvas.height);
+            dataUrl = canvas.toDataURL("image/jpeg", 0.58);
+          }
+          if (dataUrl.length > 500_000) { reject(new Error("That photo is too detailed to save in this browser demo.")); return; }
+          resolve(dataUrl);
+        };
+        image.src = String(reader.result);
+      };
+      reader.readAsDataURL(file);
+    });
+  }
   function askCreateMedicine() {
-    openModal(`<p class="eyebrow">INVENTORY</p><h2>Add sample medicine</h2><form id="newProductForm" class="form"><label>Medicine name<input name="name" required maxlength="70"></label><label>Category<select name="category">${categories.map(c => `<option>${escapeHtml(c.name)}</option>`).join("")}</select></label><div class="form-row"><label>Stock units<input name="stock" type="number" min="0" max="100000" required></label><label>Unit price (₹)<input name="price" type="number" min="1" max="100000" required></label></div><label>Batch number<input name="batch" maxlength="30" required></label><label>Expiry (YYYY-MM)<input name="expiry" type="month" required></label><button class="dark-button">Add to demo inventory →</button></form>`);
-    $("#newProductForm").onsubmit = e => {
-      e.preventDefault(); const f = new FormData(e.currentTarget);
+    const previewProduct = { id: "inventory-preview", name: "Medicine photo preview", brand: "YOUR PHARMACY", look: "bottle", color: "mint" };
+    openModal(`<p class="eyebrow">PHARMACY INVENTORY</p><h2>Add medicine & stock</h2><p class="muted">Enter the listing price and the received batch's stock and expiry. Add a separate batch each time new stock arrives; expired batches are excluded from available stock.</p><form id="newProductForm" class="form"><label>Medicine name<input name="name" required maxlength="70" placeholder="e.g. Vitamin C 500 mg"></label><div class="form-row"><label>Category<select name="category">${categories.map(c => `<option>${escapeHtml(c.name)}</option>`).join("")}</select></label><label>Sale type<select name="medicineType" required><option value="" selected disabled>Choose sale type</option><option value="otc">Non-prescription</option><option value="prescription">Prescription (not purchasable in demo)</option></select></label></div><div class="form-row"><label>Stock received (units)<input name="stock" type="number" min="1" max="100000" step="1" required placeholder="e.g. 24"></label><label>Listing price (₹)<input name="price" type="number" min="1" max="100000" step="1" required placeholder="e.g. 120"></label></div><div class="form-row"><label>Batch / lot number<input name="batch" required maxlength="30" placeholder="Printed on the pack"></label><label>Expiry month<input name="expiry" type="month" required></label></div><div class="medicine-upload"><div id="medicineImagePreview">${medicinePicture(previewProduct)}</div><div><label class="photo-button">Add medicine photo<input id="medicineImageInput" type="file" accept="image/jpeg,image/png,image/webp"></label><button type="button" class="link-button" id="removeMedicineImage">Remove photo</button><small>Optional · JPG, PNG or WebP · up to 5 MB (compressed for this browser demo)</small></div></div><p class="inventory-help">Shop workflow: name the product, record its selling price, then enter the batch number, units received and expiry from the package. Adding a product name that already exists adds another batch and updates its listing price.</p><button class="dark-button" id="saveMedicineButton">Save inventory entry →</button></form>`);
+    $("#newProductForm").elements.medicineType.value = "";
+    let imageDraft = "";
+    $("#medicineImageInput").onchange = async event => {
+      const file = event.target.files[0];
+      if (!file) return;
+      if (!["image/jpeg", "image/png", "image/webp"].includes(file.type) || file.size > 5 * 1024 * 1024) {
+        toast("Choose a JPG, PNG or WebP photo smaller than 5 MB.");
+        event.target.value = "";
+        return;
+      }
+      try {
+        imageDraft = await compressProductImage(file);
+        $("#medicineImagePreview").innerHTML = medicinePicture({ ...previewProduct, image: imageDraft });
+      } catch (error) {
+        imageDraft = "";
+        event.target.value = "";
+        toast(error.message);
+      }
+    };
+    $("#removeMedicineImage").onclick = () => {
+      imageDraft = "";
+      $("#medicineImageInput").value = "";
+      $("#medicineImagePreview").innerHTML = medicinePicture(previewProduct);
+    };
+    $("#newProductForm").onsubmit = async e => {
+      e.preventDefault();
+      const form = e.currentTarget;
+      const button = $("#saveMedicineButton");
+      if (!form.reportValidity()) return;
+      button.disabled = true;
+      const f = new FormData(form);
       const expiry = String(f.get("expiry"));
-      if (expiry < new Date().toISOString().slice(0, 7)) { toast("Expired stock cannot be added to saleable inventory."); return; }
+      if (!/^\d{4}-\d{2}$/.test(expiry) || expiry < monthNow()) {
+        button.disabled = false;
+        toast("Choose the current or a future expiry month; expired stock cannot be added.");
+        return;
+      }
       const name = String(f.get("name")).trim();
-      const batch = { batch: String(f.get("batch")).trim(), expiry, stock: Number(f.get("stock")) };
+      const stock = Number(f.get("stock"));
+      const price = Number(f.get("price"));
+      const batchCode = String(f.get("batch")).trim();
+      if (!name || !batchCode || !Number.isSafeInteger(stock) || stock < 1 || !Number.isSafeInteger(price) || price < 1) {
+        button.disabled = false;
+        toast("Check the medicine name, batch, whole-unit stock and price.");
+        return;
+      }
+      const batch = { batch: batchCode, expiry, stock };
       const existing = state.products.find(product => product.name.toLowerCase() === name.toLowerCase());
       if (existing) {
         batchesFor(existing).push(batch);
         existing.stock = availableStock(existing);
+        existing.category = String(f.get("category"));
+        existing.price = price;
+        existing.rx = existing.rx || String(f.get("medicineType")) === "prescription";
+        if (imageDraft) existing.image = imageDraft;
       } else {
-        state.products.push({ id: "custom-" + Date.now(), name, brand: "Partner listing", category: String(f.get("category")), stock: Number(f.get("stock")), batch: batch.batch, expiry, batches: [batch], price: Number(f.get("price")), rx: false, look: "bottle", color: "mint", pharmacies: [] });
+        state.products.push({ id: "custom-" + Date.now(), name, brand: "Partner listing", category: String(f.get("category")), stock, batch: batch.batch, expiry, batches: [batch], price, rx: String(f.get("medicineType")) === "prescription", image: imageDraft, look: "bottle", color: "mint", pharmacies: [] });
       }
-      persist(); closeModal(); renderDashboard("vendor"); renderCatalog(); toast("Added to demo inventory.");
+      persist();
+      closeModal();
+      renderDashboard("vendor");
+      renderCatalog();
+      renderHome();
+      toast(existing ? "New batch added and listing updated." : "Medicine and stock added to the demo inventory.");
     };
   }
   function startSupplyRequest() {

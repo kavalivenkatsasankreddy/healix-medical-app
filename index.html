@@ -22,6 +22,9 @@
         <button class="nav" data-page="prescriptions"><i>▧</i> Prescriptions</button>
         <button class="nav" data-page="reminders"><i>◷</i> Medicine reminders</button>
         <button class="nav" data-page="support"><i>☏</i> Support & chat</button>
+        <button class="nav hidden" data-page="vendor"><i>▤</i> Pharmacy inventory</button>
+        <button class="nav hidden" data-page="supplier"><i>⇄</i> Supplier portal</button>
+        <button class="nav hidden" data-page="admin"><i>⚙</i> Admin dashboard</button>
       </nav>
       <div class="sidebar-bottom">
         <div class="help-card"><span class="spark">✳</span><strong>Here for your health</strong><p>Questions about an order? Our care team is here to help.</p><button class="link-button" data-page="support">Contact support →</button></div>
@@ -84,8 +87,8 @@
       </section>
 
       <section class="page" id="page-vendor">
-        <div class="dashboard-title"><div><p class="eyebrow">PHARMACY PORTAL</p><h1>Good morning, <em>partner.</em></h1><p class="muted">Manage sample inventory, incoming orders and supply requests.</p></div><button class="dark-button" id="addMedicine">＋ Add medicine</button></div><div class="stats" id="vendorStats"></div>
-        <div class="dashboard-grid"><div class="card"><div class="section-head"><div><p class="eyebrow">YOUR CATALOGUE</p><h2>Inventory overview</h2></div><span class="badge">FEFO SAFEGUARDS</span></div><div class="table-wrap"><table><thead><tr><th>Medicine</th><th>Batch / expiry</th><th>Stock</th><th>Price</th><th>Alert</th></tr></thead><tbody id="inventory"></tbody></table></div></div><div class="card"><p class="eyebrow">STOCK HEALTH</p><h2>Needs attention</h2><div id="stockAlerts"></div><button class="outline-button" data-page="supplier">Request supplies →</button></div></div>
+        <div class="dashboard-title"><div><p class="eyebrow">PHARMACY PORTAL</p><h1>Good morning, <em>partner.</em></h1><p class="muted">Add medicine photos, prices and batch-level stock; manage incoming orders and supply requests.</p></div><button class="dark-button" id="addMedicine">＋ Add medicine</button></div><div class="stats" id="vendorStats"></div>
+        <div class="dashboard-grid"><div class="card"><div class="section-head"><div><p class="eyebrow">YOUR CATALOGUE</p><h2>Inventory overview</h2><p class="muted">Track each received batch separately. Expired stock is excluded.</p></div><span class="badge">FEFO SAFEGUARDS</span></div><div class="table-wrap"><table><thead><tr><th>Medicine</th><th>Batch · expiry · units</th><th>Available</th><th>Price</th><th>Alert</th></tr></thead><tbody id="inventory"></tbody></table></div></div><div class="card"><p class="eyebrow">STOCK HEALTH</p><h2>Needs attention</h2><div id="stockAlerts"></div><button class="outline-button" data-page="supplier">Request supplies →</button></div></div>
         <div class="card"><p class="eyebrow">READY FOR YOUR TEAM</p><h2>Incoming orders</h2><div class="table-wrap"><table><thead><tr><th>Order</th><th>Customer</th><th>Items</th><th>Total</th><th>Status</th><th>Action</th></tr></thead><tbody id="vendorOrders"></tbody></table></div></div>
         <div class="card"><p class="eyebrow">PHARMACIST REVIEW DESK</p><h2>Prescription queue</h2><p class="muted">Demo review controls update sample status only. Files are not stored or displayed; no OCR or dispensing is enabled.</p><div class="table-wrap"><table><thead><tr><th>Submission</th><th>Submitted by</th><th>Submitted</th><th>Status</th><th>Review action</th></tr></thead><tbody id="vendorPrescriptions"></tbody></table></div></div>
       </section>
