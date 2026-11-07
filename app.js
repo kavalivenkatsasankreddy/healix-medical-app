@@ -19,6 +19,13 @@
     { id: "saline", name: "Saline nasal spray", brand: "Breathe Easy", category: "Seasonal care", price: 112, generic: true, rx: false, stock: 17, batch: "BE-8841", expiry: "2027-04", look: "tube", color: "blue", pharmacies: [{ name: "Care Corner Chemist", price: 112, distance: "1.2 km" }, { name: "Green Cross Pharmacy", price: 118, distance: "0.8 km" }] },
     { id: "omega", name: "Omega-3 capsules", brand: "WellSpring", category: "Vitamins & nutrition", price: 345, generic: true, rx: false, stock: 12, batch: "WS-3981", expiry: "2027-10", look: "capsules", color: "peach", pharmacies: [{ name: "Green Cross Pharmacy", price: 345, distance: "0.8 km" }, { name: "Care Corner Chemist", price: 359, distance: "1.2 km" }] },
     { id: "allergy", name: "Cetirizine 10 mg", brand: "Everyday Care", category: "Seasonal care", price: 38, generic: true, rx: true, stock: 16, batch: "EC-4764", expiry: "2027-06", look: "capsules", color: "mint", pharmacies: [{ name: "Green Cross Pharmacy", price: 38, distance: "0.8 km" }, { name: "Care Corner Chemist", price: 42, distance: "1.2 km" }] },
+    { id: "ors", name: "Oral rehydration salts", brand: "Healix Essentials (demo)", category: "Everyday wellness", activeIngredient: "oral rehydration salts", price: 22, generic: false, rx: false, stock: 45, batch: "HE-ORS21", expiry: "2028-03", look: "sachet", color: "blue", pharmacies: [{ name: "Green Cross Pharmacy", price: 22, distance: "0.8 km" }, { name: "Care Corner Chemist", price: 25, distance: "1.2 km" }] },
+    { id: "zinc", name: "Zinc 20 mg tablets", brand: "WellSpring", category: "Vitamins & nutrition", activeIngredient: "zinc 20 mg", price: 74, generic: false, rx: false, stock: 26, batch: "WS-ZN40", expiry: "2027-12", look: "blister", color: "blue", pharmacies: [{ name: "Green Cross Pharmacy", price: 74, distance: "0.8 km" }, { name: "Neighbourhood Health", price: 80, distance: "2.1 km" }] },
+    { id: "calcium", name: "Calcium + Vitamin D3", brand: "WellSpring", category: "Vitamins & nutrition", activeIngredient: "calcium with vitamin d3", price: 185, generic: false, rx: false, stock: 18, batch: "WS-CD88", expiry: "2028-02", look: "bottle", color: "peach", pharmacies: [{ name: "Green Cross Pharmacy", price: 185, distance: "0.8 km" }, { name: "Care Corner Chemist", price: 194, distance: "1.2 km" }] },
+    { id: "cotton", name: "Sterile cotton roll", brand: "FirstKind", category: "First aid", activeIngredient: "sterile cotton", price: 48, generic: false, rx: false, stock: 32, batch: "FK-CT59", expiry: "2029-04", look: "box", color: "cream", pharmacies: [{ name: "Green Cross Pharmacy", price: 48, distance: "0.8 km" }, { name: "Neighbourhood Health", price: 52, distance: "2.1 km" }] },
+    { id: "thermometer", name: "Digital thermometer", brand: "CareBasics", category: "First aid", activeIngredient: "digital thermometer", price: 199, generic: false, rx: false, stock: 14, batch: "CB-TM16", expiry: "2030-01", look: "device", color: "blue", pharmacies: [{ name: "Green Cross Pharmacy", price: 199, distance: "0.8 km" }, { name: "Care Corner Chemist", price: 209, distance: "1.2 km" }] },
+    { id: "sanitizer", name: "Hand sanitizer 100 ml", brand: "KindSkin", category: "Personal care", activeIngredient: "hand sanitizer", price: 59, generic: false, rx: false, stock: 39, batch: "KS-HS31", expiry: "2028-01", look: "bottle", color: "blue", pharmacies: [{ name: "Green Cross Pharmacy", price: 59, distance: "0.8 km" }, { name: "Care Corner Chemist", price: 63, distance: "1.2 km" }] },
+    { id: "sunscreen", name: "Daily sunscreen SPF 30", brand: "KindSkin", category: "Personal care", activeIngredient: "broad spectrum sunscreen", price: 289, generic: false, rx: false, stock: 21, batch: "KS-SPF20", expiry: "2028-05", look: "tube", color: "peach", pharmacies: [{ name: "Care Corner Chemist", price: 289, distance: "1.2 km" }, { name: "Green Cross Pharmacy", price: 299, distance: "0.8 km" }] },
   ];
   const defaultOrders = [{ id: "HX-2048", customer: "Aarav Mehta", pharmacy: "Green Cross Pharmacy", items: "Vitamin C × 1", total: 128, status: "Out for delivery" }];
   const defaultPartners = [
@@ -38,6 +45,15 @@
   try { state = { ...defaults, ...JSON.parse(localStorage.getItem(KEY) || "{}") }; }
   catch { state = { ...defaults }; }
   if (!Array.isArray(state.products) || state.products.length === 0) state.products = initialProducts;
+  else {
+    const savedProducts = state.products;
+    state.products = initialProducts.map(seed => {
+      const saved = savedProducts.find(product => product.id === seed.id);
+      return saved ? { ...seed, ...saved, activeIngredient: seed.activeIngredient, generic: seed.generic } : seed;
+    }).concat(savedProducts.filter(product => !initialProducts.some(seed => seed.id === product.id)));
+  }
+  state.accounts = Array.isArray(state.accounts) ? state.accounts : [];
+  if (state.user) state.user = { username: state.user.username || "", mobile: state.user.mobile || "", address: state.user.address || "", photo: state.user.photo || "", ...state.user };
   const $ = (s, root = document) => root.querySelector(s);
   const $$ = (s, root = document) => [...root.querySelectorAll(s)];
   const inr = n => new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 }).format(n);
@@ -79,11 +95,16 @@
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
   const currentUser = () => state.user;
+  const profilePhoto = (user, size = "avatar") => user?.photo
+    ? `<img class="${size} profile-photo" src="${escapeHtml(user.photo)}" alt="${escapeHtml(user.name || "Profile")} profile photo">`
+    : `<span class="${size}">${escapeHtml((user?.name || "G").charAt(0).toUpperCase())}</span>`;
   function updateHeader() {
     const user = currentUser();
     $("#userName").textContent = user ? user.name : "Guest";
     $("#userRole").textContent = user ? ({ vendor: "Pharmacy vendor", supplier: "Supplier", admin: "Admin", customer: "Customer" }[user.role] || "Customer") : "Customer";
-    $("#avatar").textContent = user ? user.name.charAt(0).toUpperCase() : "G";
+    $("#avatar").outerHTML = profilePhoto(user, "avatar");
+    const newAvatar = $(".user-mini .avatar");
+    if (newAvatar) newAvatar.id = "avatar";
     $("#loginButton").textContent = user ? "My account ↗" : "Log in ↗";
     $("#cartCount").textContent = state.cart.reduce((n, item) => n + item.quantity, 0);
     $("#locationText").textContent = state.location || "Choose your location⌄";
@@ -94,10 +115,23 @@
     const visible = new Set(["home", "catalog", "cart", ...((roleButtons[user?.role] || roleButtons.customer))]);
     $$(".nav").forEach(el => el.classList.toggle("hidden", !visible.has(el.dataset.page)));
   }
+  function medicinePicture(product) {
+    const color = ({ mint: "#6f9c82", peach: "#d98f71", blue: "#628ea2", cream: "#b7985e", pink: "#bd7e81" })[product.color] || "#6f9c82";
+    const name = escapeHtml(product.name.length > 21 ? product.name.slice(0, 19) + "…" : product.name);
+    const brand = escapeHtml((product.brand || "HEALIX").slice(0, 16));
+    let pack = "";
+    if (product.look === "capsules") pack = `<g transform="rotate(-28 64 68)"><rect x="32" y="52" width="64" height="28" rx="14" fill="#fffdf7" stroke="${color}" stroke-width="2"/><path d="M64 53h18a13 13 0 0 1 0 26H64z" fill="${color}"/><path d="M64 53v26" stroke="${color}" stroke-width="2"/></g>`;
+    else if (product.look === "tube") pack = `<path d="M47 29h34l-4 69H51z" fill="#fff" stroke="#d7e2da" stroke-width="2"/><path d="M49 34h30l-2 16H50z" fill="${color}"/><path d="M56 98h17v8H56z" fill="#d6e0d8"/>`;
+    else if (product.look === "box" || product.look === "sachet") pack = product.look === "box" ? `<path d="M36 39h56v54H36z" fill="#fff" stroke="#d5e0d7" stroke-width="2"/><path d="M36 39h56v17H36z" fill="${color}"/><path d="M92 39l8 7v54h-8z" fill="#dce8df"/>` : `<path d="M43 32h42l7 68H36z" fill="#fff" stroke="#d5e0d7" stroke-width="2"/><path d="M41 39h46l2 15H39z" fill="${color}"/>`;
+    else if (product.look === "blister") pack = `<path d="M34 43q0-6 7-6h44q7 0 7 6v44q0 6-7 6H41q-7 0-7-6z" fill="#fff" stroke="#ccd9d1" stroke-width="2"/>${[0,1,2,3].map(row => [0,1,2].map(col => `<circle cx="${48 + col * 16}" cy="${54 + row * 10}" r="5" fill="#edf2ee" stroke="${color}"/>`).join("")).join("")}`;
+    else if (product.look === "device") pack = `<rect x="54" y="29" width="20" height="68" rx="10" fill="#fff" stroke="${color}" stroke-width="3"/><rect x="57" y="44" width="14" height="22" rx="2" fill="#dbeee5"/><circle cx="64" cy="82" r="4" fill="${color}"/>`;
+    else pack = `<rect x="43" y="37" width="42" height="62" rx="8" fill="#fff" stroke="#d3dfd6" stroke-width="2"/><rect x="52" y="29" width="24" height="11" rx="3" fill="${color}"/><path d="M45 55h38v20H45z" fill="${color}" opacity=".18"/><path d="M54 62h20" stroke="${color}" stroke-width="2" stroke-linecap="round"/>`;
+    return `<svg class="medicine-photo" role="img" aria-label="Illustration of ${escapeHtml(product.name)} packaging" viewBox="0 0 128 128"><defs><linearGradient id="wash-${escapeHtml(product.id)}" x1="0" x2="1" y1="0" y2="1"><stop stop-color="#f8fbf8"/><stop offset="1" stop-color="#e7f0e9"/></linearGradient><filter id="shadow-${escapeHtml(product.id)}" x="-30%" y="-30%" width="160%" height="160%"><feDropShadow dx="0" dy="4" stdDeviation="3" flood-color="#425e4d" flood-opacity=".14"/></filter></defs><rect width="128" height="128" rx="12" fill="url(#wash-${escapeHtml(product.id)})"/><circle cx="64" cy="66" r="45" fill="${color}" opacity=".09"/><g filter="url(#shadow-${escapeHtml(product.id)})">${pack}</g><text x="64" y="113" text-anchor="middle" fill="#355646" font-size="7" font-family="Arial,sans-serif" font-weight="700">${brand}</text><text x="64" y="122" text-anchor="middle" fill="#718178" font-size="6" font-family="Arial,sans-serif">${name}</text></svg>`;
+  }
   function productCard(product) {
     const pharmacies = product.pharmacies || [];
     const cheapest = pharmacies.length ? [...pharmacies].sort((a, b) => a.price - b.price)[0] : null;
-    return `<article class="product-card"><div class="product-art"><span class="product-tag">${product.rx ? "Pharmacist review" : product.category}</span><div class="medicine-visual ${escapeHtml(product.look || "bottle")} ${escapeHtml(product.color || "mint")}">${product.look === "box" ? "H+" : product.look === "capsules" ? "" : "H+"}</div></div><h3>${escapeHtml(product.name)}</h3><p class="maker">${escapeHtml(product.brand || "Healix demo")} · ${escapeHtml(product.category)}</p><div class="price-row"><span class="price">${inr(product.price)} <small>from</small></span><button data-compare="${escapeHtml(product.id)}">Compare</button></div><p class="maker">${cheapest ? `Lowest at ${escapeHtml(cheapest.name)}` : "Local pharmacy"}</p><button class="add-button" data-add="${escapeHtml(product.id)}" ${product.rx ? 'title="Prescription medicines unavailable in this demo"' : ""}>${product.rx ? "Review required" : "Add to basket +"}</button></article>`;
+    return `<article class="product-card"><div class="product-art">${medicinePicture(product)}<span class="product-tag">${product.rx ? "Pharmacist review" : product.category}</span></div><h3>${escapeHtml(product.name)}</h3><p class="maker">${escapeHtml(product.brand || "Healix demo")} · ${escapeHtml(product.category)}</p><div class="price-row"><span class="price">${inr(product.price)} <small>from</small></span><button data-compare="${escapeHtml(product.id)}">Compare</button></div><p class="maker">${cheapest ? `Lowest at ${escapeHtml(cheapest.name)}` : "Local pharmacy"}</p><button class="add-button" data-add="${escapeHtml(product.id)}" ${product.rx ? 'title="Prescription medicines unavailable in this demo"' : ""}>${product.rx ? "Review required" : "Add to basket +"}</button></article>`;
   }
   function renderProducts(container, products) {
     container.innerHTML = products.length ? products.map(productCard).join("") : `<div class="empty-state"><div>⌕</div><strong>No medicines match that search.</strong><p>Try a different name or category.</p></div>`;
@@ -113,12 +147,75 @@
     if ($("#categoryFilter").options.length !== cats.length) $("#categoryFilter").innerHTML = cats.map(c => `<option>${escapeHtml(c)}</option>`).join("");
     const query = ($("#catalogSearch").value || "").trim().toLowerCase();
     const category = $("#categoryFilter").value;
-    let products = state.products.filter(p => [p.name, p.brand, p.category].join(" ").toLowerCase().includes(query) && (category === "All categories" || p.category === category));
+    let products = state.products.filter(p => [p.name, p.brand, p.category, p.activeIngredient || ""].join(" ").toLowerCase().includes(query) && (category === "All categories" || p.category === category));
     const sort = $("#sortFilter").value;
     if (sort === "low") products.sort((a, b) => a.price - b.price);
     if (sort === "high") products.sort((a, b) => b.price - a.price);
     $("#resultCount").textContent = `${products.length} sample ${products.length === 1 ? "item" : "items"}`;
     renderProducts($("#catalogProducts"), products);
+  }
+  const suggestionIndex = new WeakMap();
+  function searchMatches(query) {
+    const term = query.trim().toLocaleLowerCase();
+    if (!term) return [];
+    return state.products
+      .filter(product => [product.name, product.brand, product.category, product.activeIngredient || ""].join(" ").toLocaleLowerCase().includes(term))
+      .slice(0, 7);
+  }
+  function hideSuggestions(input, list) {
+    list.hidden = true;
+    input.setAttribute("aria-expanded", "false");
+    input.removeAttribute("aria-activedescendant");
+    suggestionIndex.set(input, -1);
+  }
+  function showSuggestions(input, list) {
+    const matches = searchMatches(input.value);
+    if (!input.value.trim() || !matches.length) {
+      list.innerHTML = "";
+      hideSuggestions(input, list);
+      return;
+    }
+    list.innerHTML = matches.map((product, index) => `<button type="button" class="suggestion-option" role="option" aria-selected="false" id="suggest-${input.id}-${index}" data-suggestion="${escapeHtml(product.id)}"><span class="suggestion-picture">${medicinePicture(product)}</span><span class="suggestion-copy"><strong>${escapeHtml(product.name)}</strong><small>${escapeHtml(product.brand)} · ${escapeHtml(product.category)}</small></span><b>${inr(product.price)}</b></button>`).join("");
+    list.hidden = false;
+    input.setAttribute("aria-expanded", "true");
+    suggestionIndex.set(input, -1);
+  }
+  function chooseSuggestion(id) {
+    const product = state.products.find(item => item.id === id);
+    if (!product) return;
+    $("#searchInput").value = product.name;
+    hideSuggestions($("#searchInput"), $("#homeSuggestions"));
+    hideSuggestions($("#catalogSearch"), $("#catalogSuggestions"));
+    navTo("catalog");
+    $("#catalogSearch").value = product.name;
+    renderCatalog();
+    $("#catalogSearch").focus();
+  }
+  function setupAutocomplete(input, list) {
+    input.addEventListener("input", () => {
+      if (input === $("#catalogSearch")) renderCatalog();
+      showSuggestions(input, list);
+    });
+    input.addEventListener("keydown", event => {
+      const options = $$(".suggestion-option", list);
+      if (event.key === "Escape") { hideSuggestions(input, list); return; }
+      if (!options.length || list.hidden) return;
+      if (event.key === "ArrowDown" || event.key === "ArrowUp") {
+        event.preventDefault();
+        const direction = event.key === "ArrowDown" ? 1 : -1;
+        const next = ((suggestionIndex.get(input) ?? -1) + direction + options.length) % options.length;
+        suggestionIndex.set(input, next);
+        options.forEach((option, index) => option.setAttribute("aria-selected", String(index === next)));
+        input.setAttribute("aria-activedescendant", options[next].id);
+      } else if (event.key === "Enter" && (suggestionIndex.get(input) ?? -1) >= 0) {
+        event.preventDefault();
+        chooseSuggestion(options[suggestionIndex.get(input)].dataset.suggestion);
+      }
+    });
+    input.addEventListener("focus", () => { if (input.value.trim()) showSuggestions(input, list); });
+    document.addEventListener("click", event => {
+      if (!list.contains(event.target) && event.target !== input) hideSuggestions(input, list);
+    });
   }
   function renderCart() {
     $("#cartItems").innerHTML = state.cart.length ? state.cart.map(item => {
@@ -217,6 +314,9 @@
     $("#authSub").textContent = mode === "register" ? "Create a demo account to explore your Healix space." : "Sign in to pick up where you left off.";
     $("#authSubmit").textContent = mode === "register" ? "Create account →" : "Log in →";
     $("#authForm").elements.name.required = mode === "register";
+    $("#authForm").elements.username.required = mode === "register";
+    $("#authForm").elements.mobile.required = mode === "register";
+    $("#authForm").elements.password.autocomplete = mode === "register" ? "new-password" : "current-password";
     $("#authError").textContent = "";
     refreshBusinessFields();
   }
@@ -234,14 +334,19 @@
     if (password.length < 6) { $("#authError").textContent = "Use at least 6 characters for this demo."; return; }
     if (authMode === "register") {
       const name = String(data.get("name") || "").trim();
+      const username = String(data.get("username") || "").trim();
+      const mobile = String(data.get("mobile") || "").replace(/\D/g, "");
       const role = String(data.get("role") || "customer");
       if (!name) { $("#authError").textContent = "Enter your name."; return; }
+      if (!/^[a-zA-Z0-9._-]{3,30}$/.test(username)) { $("#authError").textContent = "Username must be 3–30 letters, numbers, dots, underscores or hyphens."; return; }
+      if (!/^[6-9]\d{9}$/.test(mobile)) { $("#authError").textContent = "Enter a valid 10-digit Indian mobile number."; return; }
+      if (state.accounts.some(account => account.username?.toLowerCase() === username.toLowerCase() && account.email !== email)) { $("#authError").textContent = "That username is already in use in this browser demo."; return; }
       const business = String(data.get("business") || "").trim();
       const licence = String(data.get("licence") || "").trim();
       if (["vendor", "supplier"].includes(role) && (!business || !licence)) { $("#authError").textContent = "Add demo business and licence details for partner review."; return; }
-      state.user = { name, email, role };
+      state.user = { name, username, email, mobile, address: "", photo: "", role };
       state.accounts = state.accounts.filter(account => account.email !== email);
-      state.accounts.push({ name, email, role });
+      state.accounts.push({ name, username, email, mobile, address: "", photo: "", role });
       if (["vendor", "supplier"].includes(role)) state.partners.push({ name, role: role === "vendor" ? "Pharmacy vendor" : "Supplier", email, business: `${business} · ${licence}`, status: "Pending review" });
       persist(); updateHeader(); toast(role === "vendor" || role === "supplier" ? "Demo account created; partner approval is pending." : "Demo account created.");
       navTo(role === "vendor" ? "vendor" : role === "supplier" ? "supplier" : role === "admin" ? "admin" : "home");
@@ -249,13 +354,71 @@
       const profile = state.accounts.find(account => account.email === email) || state.partners.find(p => p.email.toLowerCase() === email);
       if (!state.user && !profile) { $("#authError").textContent = "No demo profile found. Create an account first."; return; }
       if (state.user && state.user.email !== email && !profile) { $("#authError").textContent = "No demo account found for that email. Create an account to continue."; return; }
-      const profileRole = profile.role || "customer";
-      const role = state.user?.email === email ? state.user.role : profileRole.toLowerCase().includes("vendor") ? "vendor" : profileRole.toLowerCase().includes("supplier") ? "supplier" : profileRole.toLowerCase() === "admin" ? "admin" : "customer";
-      state.user = { name: state.user?.email === email ? state.user.name : profile.name, email, role };
+      const signedInProfile = state.user?.email === email ? state.user : profile;
+      const profileRole = signedInProfile.role || "customer";
+      const role = profileRole === "vendor" || profileRole === "supplier" || profileRole === "admin" ? profileRole : profileRole.toLowerCase().includes("vendor") ? "vendor" : profileRole.toLowerCase().includes("supplier") ? "supplier" : "customer";
+      state.user = { ...profile, ...signedInProfile, email, role };
       persist(); updateHeader(); toast("Demo sign-in complete. Passwords are not verified or stored.");
       navTo(role === "vendor" ? "vendor" : role === "supplier" ? "supplier" : role === "admin" ? "admin" : "home");
     }
     form.reset(); setAuthMode("login");
+  }
+  function showAccount() {
+    const user = state.user;
+    if (!user) { navTo("auth"); return; }
+    let photoDraft = user.photo || "";
+    const roleLabel = ({ customer: "Customer", vendor: "Pharmacy vendor", supplier: "Supplier / distributor", admin: "Admin demo" })[user.role] || "Customer";
+    openModal(`<p class="eyebrow">MY HEALIX ACCOUNT</p><h2>Your profile</h2><p class="muted">Update your contact details and profile photo for this browser demo.</p><form id="profileForm" class="form profile-form"><div class="profile-photo-row"><div id="profilePreview">${profilePhoto(user, "profile-avatar")}</div><div><label class="photo-button">Change profile photo<input id="profilePhotoInput" type="file" accept="image/png,image/jpeg,image/webp"></label><button type="button" class="link-button" id="removePhoto">Remove photo</button><small>JPG, PNG or WebP · up to 1 MB</small></div></div><div class="form-row"><label>Username<input name="username" required minlength="3" maxlength="30" value="${escapeHtml(user.username || "")}"></label><label>Full name<input name="name" required maxlength="80" value="${escapeHtml(user.name || "")}"></label></div><label>Email address<input name="email" type="email" required maxlength="120" value="${escapeHtml(user.email || "")}"></label><label>Mobile number<input name="mobile" type="tel" inputmode="numeric" pattern="[6-9][0-9]{9}" maxlength="10" value="${escapeHtml(user.mobile || "")}" placeholder="10-digit Indian mobile number"></label><label>Delivery address <span class="muted">(optional)</span><textarea name="address" maxlength="180" rows="2" placeholder="Add your preferred delivery address">${escapeHtml(user.address || "")}</textarea></label><div class="profile-role">Account type <strong>${escapeHtml(roleLabel)}</strong></div><div class="modal-actions"><button class="dark-button" type="submit">Save profile</button><button class="outline-button" type="button" id="accountLogout">Log out</button></div></form><p class="disclaimer">Profile details and photo are saved only in this browser. Don't use real health or sensitive data in this demo.</p>`);
+    $("#profilePhotoInput").onchange = event => {
+      const file = event.target.files[0];
+      if (!file) return;
+      if (!["image/jpeg", "image/png", "image/webp"].includes(file.type) || file.size > 1024 * 1024) {
+        toast("Choose a JPG, PNG or WebP image smaller than 1 MB.");
+        event.target.value = "";
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = () => {
+        photoDraft = String(reader.result);
+        $("#profilePreview").innerHTML = `<img class="profile-avatar profile-photo" src="${escapeHtml(photoDraft)}" alt="Profile photo preview">`;
+      };
+      reader.onerror = () => toast("The selected photo could not be read.");
+      reader.readAsDataURL(file);
+    };
+    $("#removePhoto").onclick = () => {
+      photoDraft = "";
+      $("#profilePreview").innerHTML = profilePhoto({ name: user.name }, "profile-avatar");
+      $("#profilePhotoInput").value = "";
+    };
+    $("#profileForm").onsubmit = event => {
+      event.preventDefault();
+      const data = new FormData(event.currentTarget);
+      const username = String(data.get("username") || "").trim();
+      const name = String(data.get("name") || "").trim();
+      const email = String(data.get("email") || "").trim().toLowerCase();
+      const mobile = String(data.get("mobile") || "").replace(/\D/g, "");
+      if (!/^[a-zA-Z0-9._-]{3,30}$/.test(username)) { toast("Enter a username with 3–30 letters, numbers, dots, underscores or hyphens."); return; }
+      if (!name) { toast("Enter your full name."); return; }
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { toast("Enter a valid email address."); return; }
+      if (state.accounts.some(account => account.email.toLowerCase() === email && account.email !== user.email)) { toast("That email is already used by another demo account."); return; }
+      if (mobile && !/^[6-9]\d{9}$/.test(mobile)) { toast("Enter a valid 10-digit Indian mobile number."); return; }
+      if (state.accounts.some(account => account.username?.toLowerCase() === username.toLowerCase() && account.email !== user.email)) { toast("That username is already in use in this browser demo."); return; }
+      const oldEmail = user.email;
+      Object.assign(user, { username, name, email, mobile, address: String(data.get("address") || "").trim(), photo: photoDraft });
+      const account = state.accounts.find(item => item.email === oldEmail);
+      if (account) Object.assign(account, user);
+      else state.accounts.push({ ...user });
+      const partner = state.partners.find(item => item.email.toLowerCase() === oldEmail.toLowerCase());
+      if (partner) { partner.email = email; partner.name = name; }
+      persist();
+      updateHeader();
+      closeModal();
+      toast("Profile saved in this browser.");
+    };
+    $("#accountLogout").onclick = () => {
+      state.user = null;
+      persist(); updateHeader(); closeModal(); navTo("home"); toast("Signed out.");
+    };
   }
   function askCreateMedicine() {
     openModal(`<p class="eyebrow">INVENTORY</p><h2>Add sample medicine</h2><form id="newProductForm" class="form"><label>Medicine name<input name="name" required maxlength="70"></label><label>Category<select name="category">${categories.map(c => `<option>${escapeHtml(c.name)}</option>`).join("")}</select></label><div class="form-row"><label>Stock units<input name="stock" type="number" min="0" max="100000" required></label><label>Unit price (₹)<input name="price" type="number" min="1" max="100000" required></label></div><label>Batch number<input name="batch" maxlength="30" required></label><label>Expiry (YYYY-MM)<input name="expiry" type="month" required></label><button class="dark-button">Add to demo inventory →</button></form>`);
@@ -283,6 +446,8 @@
     document.addEventListener("click", event => {
       const page = event.target.closest("[data-page]")?.dataset.page;
       if (page) { event.preventDefault(); navTo(page); return; }
+      const suggestion = event.target.closest("[data-suggestion]")?.dataset.suggestion;
+      if (suggestion) { chooseSuggestion(suggestion); return; }
       const add = event.target.closest("[data-add]")?.dataset.add; if (add) { addToCart(add); return; }
       const compare = event.target.closest("[data-compare]")?.dataset.compare; if (compare) { showCompare(compare); return; }
       const cat = event.target.closest("[data-category]")?.dataset.category; if (cat) { navTo("catalog"); $("#categoryFilter").value = cat; renderCatalog(); return; }
@@ -318,12 +483,14 @@
         return;
       }
     });
-    $("#homeSearch").onsubmit = e => { e.preventDefault(); navTo("catalog"); $("#catalogSearch").value = $("#searchInput").value; renderCatalog(); };
-    $("#catalogSearch").oninput = renderCatalog; $("#categoryFilter").onchange = renderCatalog; $("#sortFilter").onchange = renderCatalog;
+    setupAutocomplete($("#searchInput"), $("#homeSuggestions"));
+    setupAutocomplete($("#catalogSearch"), $("#catalogSuggestions"));
+    $("#homeSearch").onsubmit = e => { e.preventDefault(); hideSuggestions($("#searchInput"), $("#homeSuggestions")); navTo("catalog"); $("#catalogSearch").value = $("#searchInput").value; renderCatalog(); };
+    $("#categoryFilter").onchange = renderCatalog; $("#sortFilter").onchange = renderCatalog;
     $("#menuToggle").onclick = () => $("#sidebar").classList.toggle("open");
     $("#modalClose").onclick = closeModal;
     $("#modal").addEventListener("click", e => { if (e.target === $("#modal")) closeModal(); });
-    $("#loginButton").onclick = () => { if (state.user) openModal(`<h2>${escapeHtml(state.user.name)}</h2><p>${escapeHtml(state.user.email)}<br>${escapeHtml(state.user.role)} · demo account</p><div class="modal-actions"><button class="dark-button" id="accountLogout">Log out</button><button class="outline-button" id="accountClose">Close</button></div>`); else navTo("auth"); if (state.user) { $("#accountLogout").onclick = () => { state.user = null; persist(); updateHeader(); closeModal(); navTo("home"); toast("Signed out."); }; $("#accountClose").onclick = closeModal; } };
+    $("#loginButton").onclick = showAccount;
     $("#logout").onclick = () => { if (!state.user) { navTo("auth"); return; } state.user = null; persist(); updateHeader(); toast("Signed out."); navTo("home"); };
     $("#locationButton").onclick = () => openModal(`<p class="eyebrow">YOUR NEIGHBOURHOOD</p><h2>Where should we look?</h2><p>Choose an approximate demo location. No GPS is accessed.</p><form id="locationForm" class="form"><label>City or PIN code<input name="location" required maxlength="60" placeholder="e.g. Bengaluru · 560001" value="${escapeHtml(state.location)}"></label><button class="dark-button">Save location</button></form>`);
     $("#locationButton").addEventListener("click", () => { $("#locationForm").onsubmit = e => { e.preventDefault(); state.location = new FormData(e.currentTarget).get("location").trim(); persist(); updateHeader(); closeModal(); toast("Demo location saved."); }; });
