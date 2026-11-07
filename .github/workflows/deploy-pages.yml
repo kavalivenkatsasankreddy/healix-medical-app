@@ -29,11 +29,7 @@ jobs:
       - name: Upload static site
         uses: actions/upload-pages-artifact@v3
         with:
-          path: |
-            index.html
-            styles.css
-            app.js
-            README.md
+          path: .
       - name: Deploy site
         id: deployment
         uses: actions/deploy-pages@v4
