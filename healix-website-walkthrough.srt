@@ -301,4 +301,3 @@ is no shared backend, real authentication, payment, pharmacist verification, or 
 76
 00:05:25,692 --> 00:05:30,720
 Visit the public demo at healix-medical-app on GitHub Pages.
-
