@@ -2,6 +2,10 @@
 
 Healix is a responsive, browser-only prototype for a neighbourhood pharmacy marketplace. It is intentionally built without a framework or external runtime dependencies so it can be opened locally and demonstrated quickly.
 
+## Presentation video
+
+Watch the narrated, English-subtitled walkthrough: [MP4 video](healix-website-walkthrough.mp4) · [subtitle file](healix-website-walkthrough.srt). The video covers customer, pharmacy vendor, supplier, and admin journeys and explains the demo limitations.
+
 ## Run locally
 
 From this directory, run:

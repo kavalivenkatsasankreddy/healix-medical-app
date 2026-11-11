@@ -1,0 +1,304 @@
+1
+00:00:00,000 --> 00:00:04,426
+Welcome to Healix, a neighbourhood health marketplace demo.
+
+2
+00:00:04,426 --> 00:00:10,416
+This guided tour covers the customer experience and all three partner
+
+3
+00:00:10,416 --> 00:00:13,248
+roles: pharmacy, supplier, and administrator.
+
+4
+00:00:13,248 --> 00:00:19,467
+The home screen introduces the service, local pharmacy comparison, wellness categories,
+
+5
+00:00:19,467 --> 00:00:23,516
+popular sample products, and a reminder shortcut.
+
+6
+00:00:23,516 --> 00:00:28,112
+The header includes location, basket, and account access.
+
+7
+00:00:28,112 --> 00:00:32,160
+Prices throughout the demo use Indian rupees.
+
+8
+00:00:32,160 --> 00:00:36,402
+Search by medicine name, brand, ingredient, or category.
+
+9
+00:00:36,402 --> 00:00:41,647
+Suggestions appear as you type, and keyboard navigation is supported.
+
+10
+00:00:41,647 --> 00:00:47,388
+The catalogue can be filtered by category or sorted by price.
+
+11
+00:00:47,388 --> 00:00:52,632
+Product artwork is illustrative unless a partner uploads a photo.
+
+12
+00:00:52,632 --> 00:00:57,239
+Open Compare to review sample pharmacy prices and distances.
+
+13
+00:00:57,239 --> 00:01:02,813
+A matching ingredient and strength may show a lower-priced catalogue alternative,
+
+14
+00:01:02,813 --> 00:01:07,905
+but this is not medical advice or a substitution recommendation.
+
+15
+00:01:07,905 --> 00:01:12,024
+Prescription items are clearly marked for pharmacist review.
+
+16
+00:01:12,024 --> 00:01:17,927
+Choose Create account, then enter a name, username, Indian mobile number,
+
+17
+00:01:17,927 --> 00:01:20,718
+email, and a demo password.
+
+18
+00:01:20,718 --> 00:01:24,560
+Select Customer, Pharmacy vendor, Supplier, or Admin.
+
+19
+00:01:24,560 --> 00:01:30,463
+Vendors and suppliers add business and licence references for the simulated
+
+20
+00:01:30,463 --> 00:01:31,632
+approval queue.
+
+21
+00:01:31,632 --> 00:01:35,533
+After sign-in, My account displays the profile.
+
+22
+00:01:35,533 --> 00:01:41,525
+Customers can update their username, name, email, mobile, delivery address, and
+
+23
+00:01:41,525 --> 00:01:42,712
+profile photo.
+
+24
+00:01:42,712 --> 00:01:48,704
+These details stay in this browser only; the demo does not
+
+25
+00:01:48,704 --> 00:01:50,448
+provide secure authentication.
+
+26
+00:01:50,448 --> 00:01:56,240
+Add an available non-prescription item to the basket, change quantities, and
+
+27
+00:01:56,240 --> 00:02:02,033
+review the sample subtotal, GST, delivery charge, and total in rupees.
+
+28
+00:02:02,033 --> 00:02:05,290
+Checkout creates a demo invoice only.
+
+29
+00:02:05,290 --> 00:02:11,082
+UPI, card, banking, and delivery options are mock selections, and no
+
+30
+00:02:11,082 --> 00:02:12,768
+payment is collected.
+
+31
+00:02:12,768 --> 00:02:18,048
+My orders shows the demo order, pharmacy, items, total, status, and
+
+32
+00:02:18,048 --> 00:02:21,950
+progress from order placed through preparation and delivery.
+
+33
+00:02:21,950 --> 00:02:25,852
+A vendor can advance the sample order status.
+
+34
+00:02:25,852 --> 00:02:30,216
+This is not a real order or delivery service.
+
+35
+00:02:30,216 --> 00:02:35,363
+The prescription page lets a customer choose an image or PDF.
+
+36
+00:02:35,363 --> 00:02:40,511
+The demo retains only the file name and a sample review
+
+37
+00:02:40,511 --> 00:02:45,658
+status; it does not upload, store, read, or verify the prescription.
+
+38
+00:02:45,658 --> 00:02:48,552
+Prescription medicines cannot be checked out.
+
+39
+00:02:48,552 --> 00:02:53,788
+Create a reminder with a medicine name, morning, afternoon, or night,
+
+40
+00:02:53,788 --> 00:02:56,263
+a time, and optional notes.
+
+41
+00:02:56,263 --> 00:03:00,132
+Mark a reminder complete in the daily plan.
+
+42
+00:03:00,132 --> 00:03:05,367
+Reminders are saved locally and do not send push notifications or
+
+43
+00:03:05,367 --> 00:03:05,904
+alarms.
+
+44
+00:03:05,904 --> 00:03:11,355
+The support page provides a simple order and availability chat interface.
+
+45
+00:03:11,355 --> 00:03:16,806
+Replies are simulated in the browser; there is no live care
+
+46
+00:03:16,806 --> 00:03:17,365
+agent.
+
+47
+00:03:17,365 --> 00:03:22,344
+For health questions, contact a qualified local pharmacist or clinician.
+
+48
+00:03:22,344 --> 00:03:28,054
+A pharmacy owner registers as Pharmacy vendor and supplies demo business
+
+49
+00:03:28,054 --> 00:03:29,716
+and licence references.
+
+50
+00:03:29,716 --> 00:03:33,935
+The account appears in the admin approval queue.
+
+51
+00:03:33,935 --> 00:03:39,645
+The portal demonstrates inventory, stock alerts, incoming orders, and a prescription
+
+52
+00:03:39,645 --> 00:03:40,776
+review desk.
+
+53
+00:03:40,776 --> 00:03:44,159
+To enter shop inventory, choose Add medicine.
+
+54
+00:03:44,159 --> 00:03:49,356
+Enter the medicine name, category, sale type, stock units received, rupee
+
+55
+00:03:49,356 --> 00:03:53,651
+listing price, batch or lot number, and expiry month.
+
+56
+00:03:53,651 --> 00:03:58,849
+You can optionally add a JPG, PNG, or WebP medicine photo;
+
+57
+00:03:58,849 --> 00:04:03,144
+it is resized and stored in this browser demo.
+
+58
+00:04:03,144 --> 00:04:08,498
+When stock arrives again, enter the same product name and the
+
+59
+00:04:08,498 --> 00:04:10,057
+new batch details.
+
+60
+00:04:10,057 --> 00:04:14,947
+The portal keeps batches separate and updates the listing price.
+
+61
+00:04:14,947 --> 00:04:20,302
+Expired stock is rejected or excluded, low-stock and near-expiry items are
+
+62
+00:04:20,302 --> 00:04:25,656
+flagged, and demo orders allocate eligible stock by earliest expiry first.
+
+63
+00:04:25,656 --> 00:04:30,834
+The supplier sits between a company and pharmacy shops.
+
+64
+00:04:30,834 --> 00:04:37,099
+The supplier portal shows pharmacy replenishment requests, requested quantities, status updates,
+
+65
+00:04:37,099 --> 00:04:40,621
+and sample listings for partner pharmacies.
+
+66
+00:04:40,621 --> 00:04:46,344
+These are local workflow demonstrations, not purchase orders or shipments.
+
+67
+00:04:46,344 --> 00:04:52,507
+The admin dashboard summarizes partner accounts, pending approvals, demo orders, and
+
+68
+00:04:52,507 --> 00:04:53,727
+catalogue counts.
+
+69
+00:04:53,727 --> 00:04:59,890
+An administrator can review and approve pending vendor or supplier profiles
+
+70
+00:04:59,890 --> 00:05:02,804
+and inspect sample marketplace activity.
+
+71
+00:05:02,804 --> 00:05:06,816
+Approval controls do not verify real licences.
+
+72
+00:05:06,816 --> 00:05:12,900
+Healix is a presentation prototype, not a live pharmacy or sales
+
+73
+00:05:12,900 --> 00:05:13,524
+service.
+
+74
+00:05:13,524 --> 00:05:19,608
+Accounts, images, inventory, orders, and prices are local sample data; there
+
+75
+00:05:19,608 --> 00:05:25,692
+is no shared backend, real authentication, payment, pharmacist verification, or fulfilment.
+
+76
+00:05:25,692 --> 00:05:30,720
+Visit the public demo at healix-medical-app on GitHub Pages.
+

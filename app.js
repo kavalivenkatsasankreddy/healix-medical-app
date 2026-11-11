@@ -248,10 +248,13 @@
     $("#messages").scrollTop = $("#messages").scrollHeight;
   }
   function tableRow(cells) { return `<tr>${cells.map(c => `<td>${c}</td>`).join("")}</tr>`; }
+  function renderStats(container, items) {
+    container.innerHTML = items.map(([label, value, detail]) => `<article class="stat"><small>${escapeHtml(label)}</small><strong>${escapeHtml(value)}</strong><em>${escapeHtml(detail)}</em></article>`).join("");
+  }
   function renderDashboard(page) {
     if (page === "vendor") {
       const low = state.products.filter(p => availableStock(p) <= 10 || batchesFor(p).some(b => b.expiry >= monthNow() && b.expiry <= new Date(Date.now() + 60 * 86400000).toISOString().slice(0, 7) && b.stock > 0));
-      $("#vendorStats").innerHTML = [["Live listings", state.products.length, "+ sample catalogue"], ["Open orders", state.orders.filter(o => o.status !== "Delivered").length, "Demo workflow"], ["Low stock", low.length, "Review soon"], ["Sales this month", inr(28450), "Illustrative"]];
+      renderStats($("#vendorStats"), [["Live listings", state.products.length, "+ sample catalogue"], ["Open orders", state.orders.filter(o => o.status !== "Delivered").length, "Demo workflow"], ["Low stock", low.length, "Review soon"], ["Sales this month", inr(28450), "Illustrative"]]);
       $("#inventory").innerHTML = state.products.map(p => {
         const batches = batchesFor(p);
         const stock = availableStock(p);
@@ -265,12 +268,12 @@
       $("#vendorPrescriptions").innerHTML = state.prescriptions.length ? state.prescriptions.map((rx, i) => tableRow([`<strong>${escapeHtml(rx.name)}</strong>`, escapeHtml(rx.submittedBy || "Demo customer"), escapeHtml(rx.date), `<span class="status ${rx.status === "Awaiting pharmacist review" ? "pending" : rx.status === "Rejected (demo)" ? "rejected" : ""}">${escapeHtml(rx.status)}</span>`, rx.status === "Awaiting pharmacist review" ? `<button class="table-action" data-rx-review="approve:${i}">Approve demo</button> <button class="table-action" data-rx-review="reject:${i}">Reject</button>` : "—"])).join("") : `<tr><td colspan="5">No demo submissions are waiting for review.</td></tr>`;
     }
     if (page === "supplier") {
-      $("#supplierStats").innerHTML = [["Requests", state.supplies.length, "From partner pharmacies"], ["Awaiting action", state.supplies.filter(s => s.status === "Requested").length, "Review requests"], ["Demo listings", state.listings.length, "Sample catalogue"], ["Partner pharmacies", state.partners.filter(p => p.role.includes("vendor") && p.status === "Approved").length, "Approved accounts"]];
+      renderStats($("#supplierStats"), [["Requests", state.supplies.length, "From partner pharmacies"], ["Awaiting action", state.supplies.filter(s => s.status === "Requested").length, "Review requests"], ["Demo listings", state.listings.length, "Sample catalogue"], ["Partner pharmacies", state.partners.filter(p => p.role.includes("vendor") && p.status === "Approved").length, "Approved accounts"]]);
       $("#supplyRequests").innerHTML = state.supplies.map((s, i) => tableRow([`<strong>${escapeHtml(s.id)}</strong>`, escapeHtml(s.pharmacy), escapeHtml(s.items), escapeHtml(s.date), `<span class="status ${s.status === "Requested" ? "pending" : ""}">${escapeHtml(s.status)}</span>`, `<button class="table-action" data-supply-status="${i}">Update</button>`])).join("");
       $("#listings").innerHTML = state.listings.map(l => `<div class="listing-row"><strong>${escapeHtml(l.name)}</strong><small>${escapeHtml(l.detail)}</small></div>`).join("");
     }
     if (page === "admin") {
-      $("#adminStats").innerHTML = [["Partner accounts", state.partners.length, "Vendor & supplier"], ["Pending approvals", state.partners.filter(p => p.status === "Pending review").length, "Needs review"], ["Demo orders", state.orders.length, "All sample orders"], ["Catalogue items", state.products.length, "Sample data only"]];
+      renderStats($("#adminStats"), [["Partner accounts", state.partners.length, "Vendor & supplier"], ["Pending approvals", state.partners.filter(p => p.status === "Pending review").length, "Needs review"], ["Demo orders", state.orders.length, "All sample orders"], ["Catalogue items", state.products.length, "Sample data only"]]);
       $("#partners").innerHTML = state.partners.map((p, i) => tableRow([`<strong>${escapeHtml(p.name)}</strong>`, escapeHtml(p.role), escapeHtml(p.email), escapeHtml(p.business || "—"), `<span class="status ${p.status === "Pending review" ? "pending" : ""}">${escapeHtml(p.status)}</span>`, p.status === "Pending review" ? `<button class="table-action" data-approve="${i}">Approve</button>` : "—"])).join("");
       $("#adminOrders").innerHTML = state.orders.map(o => tableRow([`<strong>${escapeHtml(o.id)}</strong>`, escapeHtml(o.customer || "Demo customer"), escapeHtml(o.pharmacy || "Local pharmacy"), inr(o.total), `<span class="status">${escapeHtml(o.status)}</span>`])).join("");
     }
